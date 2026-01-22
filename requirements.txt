@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+python-telegram-bot==20.7
+sqlalchemy==1.4.49
+typing-extensions>=4.7.1
+openpyxl
