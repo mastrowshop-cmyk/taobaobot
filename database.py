@@ -1,19 +1,52 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from config import DATABASE_URL
 
-def _fix_db_url(url: str) -> str:
-    # Render иногда даёт postgres://, SQLAlchemy ждёт postgresql+psycopg2://
-    if url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql+psycopg2://", 1)
-    return url
+# =====================
+# DATABASE URL
+# =====================
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-DB_URL = _fix_db_url(DATABASE_URL)
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set")
 
-connect_args = {}
-if DB_URL.startswith("sqlite:///"):
-    connect_args = {"check_same_thread": False}
+# fix для postgres://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgres://",
+        "postgresql+psycopg2://",
+        1
+    )
 
-engine = create_engine(DB_URL, echo=False, connect_args=connect_args)
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+# =====================
+# ENGINE
+# =====================
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=300,
+)
+
+# =====================
+# SESSION
+# =====================
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+# =====================
+# BASE
+# =====================
 Base = declarative_base()
+
+# =====================
+# DEPENDENCY
+# =====================
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
