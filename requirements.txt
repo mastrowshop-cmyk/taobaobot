@@ -1,6 +1,9 @@
-fastapi
-uvicorn
+fastapi==0.115.0
+uvicorn==0.30.6
 python-telegram-bot==20.7
 sqlalchemy==1.4.49
 typing-extensions>=4.7.1
-openpyxl
+openpyxl==3.1.5
+python-multipart==0.0.9
+requests==2.32.3
+psycopg2-binary==2.9.9
